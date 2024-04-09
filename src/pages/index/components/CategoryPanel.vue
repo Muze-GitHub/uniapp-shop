@@ -19,7 +19,7 @@ const props = defineProps({
       :key="item.id"
     >
       <image class="icon" :src="item.icon" />
-      <text class="text">{{ item..icon }}</text>
+      <text class="text">{{ item.name }}</text>
     </navigator>
   </view>
 </template>
