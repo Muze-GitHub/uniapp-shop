@@ -1,12 +1,25 @@
 <script setup lang="ts">
-//
-</script>
+import CateGoryPanel from './components/CateGoryPanel.vue'
+import { onLoad } from '@dcloudio/uni-app'
+import CustomNavBar from './components/CustomNavbar.vue'
+import { getHomeBannerAPI, getHomeCategoryAPI } from '@/services/home'
+import type { BannerItem, CateGoryItem } from '@/types/home'
 
+import { ref } from 'vue'
+const bannerData = ref<BannerItem[]>([])
+const categoryData = ref<CateGoryItem[]>([])
+
+onLoad(async () => {
+  const result = await getHomeBannerAPI()
+  bannerData.value = result.result
+  const categoryRes = await getHomeCategoryAPI()
+  categoryData.value = categoryRes.result
+})
+</script>
 <template>
-  <view class="index">index</view>
-  <uni-card title="基础卡片" extra="额外信息">
-    <text>这是一个基础卡片示例，此示例展示了一个标题加标题额外信息的标准卡片。</text>
-  </uni-card>
+  <CustomNavBar />
+  <XtxSwiper :data="bannerData" />
+  <CateGoryPanel :data="categoryData" />
 </template>
 
 <style lang="scss">
