@@ -30,9 +30,9 @@ const refreshData = () => {
   guessData.value = []
 }
 
-// onMounted(async () => {
-//   loadMore()
-// })
+onMounted(async () => {
+  loadMore()
+})
 
 defineExpose({
   loadMore,
