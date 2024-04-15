@@ -13,8 +13,10 @@ const orderTypes = [
   { type: 4, text: '待评价', icon: 'icon-comment' },
 ]
 
-const { profile } = useMemberStore()
-console.log(profile)
+// const { profile } = useMemberStore()
+const memberStore = useMemberStore()
+
+console.log(memberStore.profile)
 
 const guessRef = ref()
 const loadMore = () => {
@@ -28,12 +30,12 @@ const loadMore = () => {
     <!-- 个人资料 -->
     <view class="profile" :style="{ paddingTop: safeAreaInsets!.top + 'px' }">
       <!-- 情况1：已登录 -->
-      <view class="overview" v-if="profile">
+      <view class="overview" v-if="memberStore.profile">
         <navigator url="/pagesMember/profile/profile" hover-class="none">
-          <image class="avatar" mode="aspectFill" :src="profile?.avatar"></image>
+          <image class="avatar" mode="aspectFill" :src="memberStore.profile?.avatar"></image>
         </navigator>
         <view class="meta">
-          <view class="nickname"> {{ profile?.nickname }} </view>
+          <view class="nickname"> {{ memberStore.profile?.nickname }} </view>
           <navigator class="extra" url="/pagesMember/profile/profile" hover-class="none">
             <text class="update">更新头像昵称</text>
           </navigator>
