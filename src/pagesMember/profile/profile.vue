@@ -49,27 +49,38 @@ const onSave = async () => {
 }
 
 const onChangeAvatar = () => {
-  uni.chooseImage({
+  uni.chooseMedia({
+    // 文件个数
     count: 1,
-    extension: ['jpg', 'png', 'jpeg', 'webp'],
-    sourceType: ['album', 'camera'],
+    // 文件类型
+    mediaType: ['image'],
     success: (res) => {
-      // 文件路径
-      const tempFilePaths = res.tempFilePaths
+      // 本地路径
+      const { tempFilePath } = res.tempFiles[0]
       // 上传
-      uploadFile(tempFilePaths[0])
+      uploadFile(tempFilePath)
     },
   })
 }
 
-const uploadFile = async (filePath: string) => {
+// 文件上传-兼容小程序端、H5端、App端
+const uploadFile = (file: string) => {
+  // 文件上传
   uni.uploadFile({
     url: '/member/profile/avatar',
-    filePath,
-    fileType: 'image',
-    name: 'avatar-mz',
+    name: 'file',
+    filePath: file,
     success: (res) => {
-      console.log(res)
+      if (res.statusCode === 200) {
+        const avatar = JSON.parse(res.data).result.avatar
+        // 个人信息页数据更新
+        profile.value.avatar = avatar
+        // Store头像更新
+        memberStore.profile!.avatar = avatar
+        uni.showToast({ icon: 'success', title: '更新成功' })
+      } else {
+        uni.showToast({ icon: 'error', title: '出现错误' })
+      }
     },
   })
 }
