@@ -3,7 +3,12 @@ import AddressPanel from './components/AddressPanel.vue'
 import ServicePanel from './components/ServicePanel.vue'
 import { onLoad } from '@dcloudio/uni-app'
 import { getGoodsByIdAPI } from '@/services/goods'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import type {
+  SkuPopupEvent,
+  SkuPopupInstance,
+  SkuPopupLocaldata,
+} from '@/components/vk-data-goods-sku-popup/vk-data-goods-sku-popup'
 import type { GoodsResult } from '@/types/goods'
 import Skeleton from './components/Skeleton.vue'
 // 获取屏幕边界到安全区域距离
@@ -34,14 +39,64 @@ const showPanel = (name: typeof popupName.value) => {
 const closeServicePanel = () => {
   popupRef.value.close()
 }
-
+// 是否显示SKU组件
+const isShowSku = ref(false)
+// 商品信息
+const localdata = ref({} as SkuPopupLocaldata)
 const goods = ref<GoodsResult>()
 const getGoodsData = async () => {
-  const result = await getGoodsByIdAPI(id)
-  goods.value = result.result
-  uni.setNavigationBarTitle({ title: result.result.name })
+  const res = await getGoodsByIdAPI(id)
+  goods.value = res.result
+  console.log('商品信息:', res.result)
+  uni.setNavigationBarTitle({ title: res.result.name })
+  // SKU组件所需格式
+  localdata.value = {
+    _id: res.result.id,
+    name: res.result.name,
+    goods_thumb: res.result.mainPictures[0],
+    spec_list: res.result.specs.map((v) => {
+      return {
+        name: v.name,
+        list: v.values,
+      }
+    }),
+    sku_list: res.result.skus.map((v) => {
+      return {
+        _id: v.id,
+        goods_id: res.result.id,
+        goods_name: res.result.name,
+        image: v.picture,
+        price: v.price * 100, // 注意：需要乘以 100
+        stock: v.inventory,
+        sku_name_arr: v.specs.map((vv) => vv.valueName),
+      }
+    }),
+  }
   isLoading.value = false
 }
+
+// 按钮模式
+enum SkuMode {
+  Both = 1,
+  Cart = 2,
+  Buy = 3,
+}
+const mode = ref<SkuMode>(SkuMode.Cart)
+// 打开SKU弹窗修改按钮模式
+const openSkuPopup = (val: SkuMode) => {
+  console.log(val, '---', SkuMode)
+  // 显示SKU弹窗
+  isShowSku.value = true
+  // 修改按钮模式
+  mode.value = val
+}
+
+// SKU组件实例
+const skuPopupRef = ref<SkuPopupInstance>()
+// 计算被选中的值
+const selectArrText = computed(() => {
+  return skuPopupRef.value?.selectArr?.join(' ').trim() || '请选择商品规格'
+})
 
 onLoad(() => {
   getGoodsData()
@@ -89,9 +144,9 @@ onLoad(() => {
 
       <!-- 操作面板 -->
       <view class="action">
-        <view class="item arrow">
+        <view class="item arrow" @tap="openSkuPopup(SkuMode?.Both || 1)">
           <text class="label">选择</text>
-          <text class="text ellipsis"> 请选择商品规格 </text>
+          <text class="text ellipsis"> {{ selectArrText }} </text>
         </view>
         <view class="item arrow" @tap="showPanel('address')">
           <text class="label">送至</text>
@@ -173,10 +228,23 @@ onLoad(() => {
       </navigator>
     </view>
     <view class="buttons">
-      <view class="addcart"> 加入购物车 </view>
-      <view class="buynow"> 立即购买 </view>
+      <view class="addcart" @tap="openSkuPopup(SkuMode?.Cart || 2)"> 加入购物车 </view>
+      <view class="buynow" @tap="openSkuPopup(SkuMode?.Buy || 3)"> 立即购买 </view>
     </view>
   </view>
+  <vk-data-goods-sku-popup
+    v-model="isShowSku"
+    :localdata="localdata"
+    :mode="mode"
+    add-cart-background-color="#FFA868"
+    buy-now-background-color="#27BA9B"
+    ref="skuPopupRef"
+    :actived-style="{
+      color: '#27BA9B',
+      borderColor: '#27BA9B',
+      backgroundColor: '#E9F8F5',
+    }"
+  />
 </template>
 
 <style lang="scss">

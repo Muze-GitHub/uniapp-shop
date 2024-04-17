@@ -1,12 +1,11 @@
-<!-- 静态数据演示版本 适合任何后端 -->
 <template>
-  <view class="app">
-    <button @click="openSkuPopup()">打开SKU组件</button>
+  <div class="app">
+    <button @click="openSkuPopup">打开SKU组件</button>
 
     <vk-data-goods-sku-popup
       ref="skuPopup"
       v-model="skuKey"
-      border-radius="20"
+      :border-radius="20"
       :localdata="goodsInfo"
       :mode="skuMode"
       @open="onOpenSkuPopup"
@@ -14,39 +13,22 @@
       @add-cart="addCart"
       @buy-now="buyNow"
     ></vk-data-goods-sku-popup>
-  </view>
+  </div>
 </template>
 
 <script>
-var that // 当前页面对象
+import { ref } from 'vue'
+
+let skuPopup
+let goodsInfo = ref({})
+let skuKey = ref(false)
+let skuMode = ref(1)
+
 export default {
-  data() {
-    return {
-      // 是否打开SKU弹窗
-      skuKey: false,
-      // SKU弹窗模式
-      skuMode: 1,
-      // 后端返回的商品信息
-      goodsInfo: {},
-    }
-  },
-  // 监听 - 页面每次【加载时】执行(如：前进)
-  onLoad(options) {
-    that = this
-    that.init(options)
-  },
-  methods: {
-    // 初始化
-    init(options = {}) {},
-    // 获取商品信息，并打开sku弹出
-    openSkuPopup() {
-      /**
-       * 获取商品信息
-       * 这里可以看到每次打开SKU都会去重新请求商品信息,为的是每次打开SKU组件可以实时看到剩余库存
-       */
-      // 此处写接口请求，并将返回的数据进行处理成goodsInfo的数据格式，
-      // goodsInfo是后端返回的数据
-      that.goodsInfo = {
+  setup() {
+    const openSkuPopup = () => {
+      // 模拟获取商品信息
+      goodsInfo.value = {
         _id: '002',
         name: '迪奥香水',
         goods_thumb:
@@ -90,65 +72,78 @@ export default {
           },
         ],
       }
-      that.skuKey = true
-    },
-    // sku组件 开始-----------------------------------------------------------
-    onOpenSkuPopup() {
+      skuKey.value = true
+    }
+
+    const onOpenSkuPopup = () => {
       console.log('监听 - 打开sku组件')
-    },
-    onCloseSkuPopup() {
+    }
+
+    const onCloseSkuPopup = () => {
       console.log('监听 - 关闭sku组件')
-    },
-    // 加入购物车前的判断
-    addCartFn(obj) {
-      let { selectShop } = obj
-      // 模拟添加到购物车,请替换成你自己的添加到购物车逻辑
+    }
+
+    const addCartFn = (obj) => {
+      const { selectShop } = obj
+      // 模拟添加到购物车逻辑
       let res = {}
       let name = selectShop.goods_name
-      if (selectShop.sku_name != '默认') {
+      if (selectShop.sku_name !== '默认') {
         name += '-' + selectShop.sku_name_arr
       }
       res.msg = `${name} 已添加到购物车`
-      if (typeof obj.success == 'function') obj.success(res)
-    },
-    // 加入购物车按钮
-    addCart(selectShop) {
+      if (typeof obj.success === 'function') obj.success(res)
+    }
+
+    const addCart = (selectShop) => {
       console.log('监听 - 加入购物车')
-      that.addCartFn({
+      addCartFn({
         selectShop: selectShop,
         success: function (res) {
           // 实际业务时,请替换自己的加入购物车逻辑
-          that.toast(res.msg)
+          toast(res.msg)
           setTimeout(function () {
-            that.skuKey = false
+            skuKey.value = false
           }, 300)
         },
       })
-    },
-    // 立即购买
-    buyNow(selectShop) {
+    }
+
+    const buyNow = (selectShop) => {
       console.log('监听 - 立即购买')
-      that.addCartFn({
+      addCartFn({
         selectShop: selectShop,
         success: function (res) {
           // 实际业务时,请替换自己的立即购买逻辑
-          that.toast('立即购买')
+          toast('立即购买')
         },
       })
-    },
-    toast(msg) {
-      uni.showToast({
-        title: msg,
-        icon: 'none',
-      })
-    },
+    }
+
+    const toast = (msg) => {
+      // 自定义 toast 函数
+      console.log(msg)
+    }
+
+    return {
+      skuPopup,
+      goodsInfo,
+      skuKey,
+      skuMode,
+      openSkuPopup,
+      onOpenSkuPopup,
+      onCloseSkuPopup,
+      addCart,
+      buyNow,
+      toast,
+    }
   },
 }
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .app {
-  padding: 30rpx;
-  font-size: 28rpx;
+  padding: 30px;
+  font-size: 28px;
 }
 </style>
