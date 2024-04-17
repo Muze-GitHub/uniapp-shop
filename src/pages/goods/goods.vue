@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AddressPanel from './components/AddressPanel.vue'
 import ServicePanel from './components/ServicePanel.vue'
+import { postMemberCartAPI } from '@/services/cart'
 import { onLoad } from '@dcloudio/uni-app'
 import { getGoodsByIdAPI } from '@/services/goods'
 import { ref, computed } from 'vue'
@@ -84,7 +85,6 @@ enum SkuMode {
 const mode = ref<SkuMode>(SkuMode.Cart)
 // 打开SKU弹窗修改按钮模式
 const openSkuPopup = (val: SkuMode) => {
-  console.log(val, '---', SkuMode)
   // 显示SKU弹窗
   isShowSku.value = true
   // 修改按钮模式
@@ -97,6 +97,16 @@ const skuPopupRef = ref<SkuPopupInstance>()
 const selectArrText = computed(() => {
   return skuPopupRef.value?.selectArr?.join(' ').trim() || '请选择商品规格'
 })
+// 加入购物车事件
+const onAddCart = async (ev: SkuPopupEvent) => {
+  await postMemberCartAPI({ skuId: ev._id, count: ev.buy_num })
+  uni.showToast({ title: '添加成功' })
+  isShowSku.value = false
+}
+// 立即购买
+const onBuyNow = (ev: SkuPopupEvent) => {
+  uni.navigateTo({ url: `/pagesOrder/create/create?skuId=${ev._id}&count=${ev.buy_num}` })
+}
 
 onLoad(() => {
   getGoodsData()
@@ -244,6 +254,8 @@ onLoad(() => {
       borderColor: '#27BA9B',
       backgroundColor: '#E9F8F5',
     }"
+    @add-cart="onAddCart"
+    @buy-now="onBuyNow"
   />
 </template>
 
