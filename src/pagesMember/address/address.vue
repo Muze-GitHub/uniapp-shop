@@ -81,7 +81,11 @@ const onDeleteAddress = (id: string) => {
     </scroll-view>
     <!-- 添加按钮 -->
     <view class="add-btn">
-      <navigator hover-class="none" url="/pagesMember/address-form/address-form">
+      <navigator
+        hover-class="none"
+        url="/pagesMember/address-form/address-form"
+        @tap.stop="() => {}"
+      >
         新建地址
       </navigator>
     </view>
